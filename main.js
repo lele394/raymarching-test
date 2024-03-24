@@ -2,6 +2,8 @@
 const canvas = document.getElementById("myCanvas");
 var gl = canvas.getContext("webgl2");
 
+
+// Webgl does not support compute shader unless you do some funky things, so in the frag it goes
 // Vertex shader program
 var vsSource;
 var fsSource;

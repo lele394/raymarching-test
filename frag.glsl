@@ -4,6 +4,8 @@ precision mediump float;
 uniform vec2 uResolution;
 uniform float col;
 
+uniform float FOV;
+
 uniform vec3 camPosition;
 
 void main(void) {
