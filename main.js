@@ -112,8 +112,66 @@ function UpdateGL3float (name, value1, value2, value3 ){
 
 
 
+// Define the colors array
+// Colors available for rendering
+function generateColors_Good() {
+  const numColors = 16; // Number of colors
+  const numShades = 16; // Number of shades for each color
+  const colors = [];
+
+  // Define base colors
+  const baseColors = [
+      { r: 1.0, g: 0.0, b: 0.0 },  // Red
+      { r: 1.0, g: 0.5, b: 0.0 },  // Orange
+      { r: 1.0, g: 1.0, b: 0.0 },  // Yellow
+      { r: 0.5, g: 1.0, b: 0.0 },  // Lime
+      { r: 0.0, g: 1.0, b: 0.0 },  // Green
+      { r: 0.0, g: 1.0, b: 0.5 },  // Turquoise
+      { r: 0.0, g: 1.0, b: 1.0 },  // Cyan
+      { r: 0.0, g: 0.5, b: 1.0 },  // Azure
+      { r: 0.0, g: 0.0, b: 1.0 },  // Blue
+      { r: 0.5, g: 0.0, b: 1.0 },  // Indigo
+      { r: 1.0, g: 0.0, b: 1.0 },  // Violet
+      { r: 1.0, g: 0.0, b: 0.5 },  // Magenta
+      { r: 0.5, g: 0.0, b: 0.0 },  // Maroon
+      { r: 0.5, g: 0.25, b: 0.0 }, // Brown
+      { r: 0.25, g: 0.25, b: 0.25 }, // Gray
+      { r: 1.0, g: 1.0, b: 1.0 }   // White
+  ];
+
+  // Generate intermediate colors with different shades
+  for (let i = 0; i < numColors; i++) {
+      const baseColor = baseColors[i];
+      for (let j = 0; j < numShades; j++) {
+          const luminosity = j / (numShades - 1)*1.5; // Adjust luminosity from 0 to 1
+          const r = baseColor.r * luminosity;
+          const g = baseColor.g * luminosity;
+          const b = baseColor.b * luminosity;
+          colors.push({ r, g, b });
+      }
+  }
+
+  return colors;
+}
 
 
+
+
+
+
+// Generate colors
+// const colors = generateColors_Good();
+const colors = generateColors_Good();
+
+
+// Set uniform values in WebGL
+function setUniformColors(gl, program) {
+  const colorsLocation = gl.getUniformLocation(program, "colors");
+  const colorsArray = colors.flatMap(color => [color.r, color.g, color.b]);
+  gl.uniform3fv(colorsLocation, colorsArray);
+}
+
+setUniformColors(gl, shaderProgram);
 
 
 
