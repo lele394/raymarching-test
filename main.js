@@ -179,19 +179,19 @@ setUniformColors(gl, shaderProgram);
 // set volumetric data
 let volume = [];
 for (let i = 0; i < 14*14*14; i++) {
-  volume.push(200)
+  volume.push(20)
 }
 // adds a cube to the volume
-volume[14*7+14*7+14*7] = 100; // mid
-volume[14*0+14*0+14*0] = 100; //bot
-volume[14*0+14*1+14*0] = 10; //bot
-volume[14*0+14*0+14*1] = 10; //bot
-volume[14*0+14*1+14*1] = 10; //bot
+// volume[14*7+14*7+14*7] = 100; // mid
+// volume[14*0+14*0+14*0] = 100; //bot
+// volume[14*0+14*1+14*0] = 10; //bot
+// volume[14*0+14*0+14*1] = 10; //bot
+// volume[14*0+14*1+14*1] = 10; //bot
 
-volume[14*1+14*0+14*0] = 10; //top
-volume[14*1+14*1+14*0] = 10; //top
-volume[14*1+14*0+14*1] = 10; //top
-volume[14*1+14*1+14*1] = 10; //top
+// volume[14*1+14*0+14*0] = 10; //top
+// volume[14*1+14*1+14*0] = 10; //top
+// volume[14*1+14*0+14*1] = 10; //top
+// volume[14*1+14*1+14*1] = 10; //top
 
 
 const volumeLocation = gl.getUniformLocation(shaderProgram, "volume");
@@ -203,9 +203,9 @@ console.log(volume);
 
 
 var camera = {
-  x: 0,
-  y: 0,
-  z: 0,
+  x: 1,
+  y: -1,
+  z: 1,
 }
 
 
@@ -219,7 +219,7 @@ function render() {
 
   UpdateGL3float('camPosition', camera.x, camera.y, camera.z);
 
-  UpdateGL1float('FOV', 360 );
+  UpdateGL1float('FOV', 90 );
   
   
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
