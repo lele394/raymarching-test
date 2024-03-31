@@ -4,12 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>raymarcher</title>
+
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* Prevent scrolling */
+        }
+
+        canvas {
+            display: block; /* Remove default inline display */
+
+        }
+    </style>
+
+
 </head>
 <body>
     <script id="vertexShader" type="x-shader/x-vertex" src="vert.glsl"></script>
     <script id="fragmentShader" type="x-shader/x-fragment" src="frag.glsl"></script>
   
     <script type="module" src="main.js"></script>
-    <canvas id="myCanvas" width="1800" height="800" style="border:1px solid black;"></canvas>
+    <canvas id="myCanvas" width="1920" height="640"></canvas>
 </body>
 </html>

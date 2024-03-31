@@ -176,11 +176,35 @@ setUniformColors(gl, shaderProgram);
 
 
 
+// set volumetric data
+let volume = [];
+for (let i = 0; i < 14*14*14; i++) {
+  volume.push(200)
+}
+// adds a cube to the volume
+volume[14*7+14*7+14*7] = 100; // mid
+volume[14*0+14*0+14*0] = 100; //bot
+volume[14*0+14*1+14*0] = 10; //bot
+volume[14*0+14*0+14*1] = 10; //bot
+volume[14*0+14*1+14*1] = 10; //bot
+
+volume[14*1+14*0+14*0] = 10; //top
+volume[14*1+14*1+14*0] = 10; //top
+volume[14*1+14*0+14*1] = 10; //top
+volume[14*1+14*1+14*1] = 10; //top
+
+
+const volumeLocation = gl.getUniformLocation(shaderProgram, "volume");
+gl.uniform1iv(volumeLocation, volume);
+
+console.log(volume);
+
+
 
 
 var camera = {
   x: 0,
-  y: 10,
+  y: 0,
   z: 0,
 }
 
@@ -191,35 +215,39 @@ var camera = {
 
 function render() {
 
-
-  
-
-
-  // Set the screen size and pass it to the shader
-  UpdateGL2float('uResolution', canvas.width, canvas.height);
-
-
-
   UpdateGL1float('col', 0.3 );
 
   UpdateGL3float('camPosition', camera.x, camera.y, camera.z);
 
-
-
-
-  UpdateGL1float('FOV', 90 );
-
-
-
-
+  UpdateGL1float('FOV', 360 );
+  
+  
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.clear(gl.COLOR_BUFFER_BIT);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  return;
   
 
   //requestAnimationFrame(render);
 }
 
 
+// sets canva size
+// Set the screen size and pass it to the shader
+UpdateGL2float('uResolution', canvas.width, canvas.height);
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-requestAnimationFrame(render);
+console.log(canvas.width, canvas.height);
+
+window.addEventListener('resize', () => {
+  UpdateGL2float('uResolution', canvas.width, canvas.height);
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  console.log(canvas.width, canvas.height);
+  // requestAnimationFrame(render);
+  render();
+});
+
+// requestAnimationFrame(render);
+render();
