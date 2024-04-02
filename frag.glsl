@@ -2,6 +2,7 @@
 precision mediump float;
 
 #define INFINITY +(1.0/0.0);
+#define PI 3.1415926535897932384626433832795
 
 #define COLOR_SIZE 256
 uniform vec3 colors[COLOR_SIZE];
@@ -89,15 +90,24 @@ vec3 GetRayDirection(void)
 
     // ===========================================================================================================DEBUG TEST DIRECTION
     // return vec3(0, 1, 0);
-    float phi_step = 0.01;
-    float theta_step = 0.01;
+    // float phi_step = 0.5;
+    // float theta_step = 0.5;
 
-    float phi =    (gl_FragCoord.x/uResolution.x) -uResolution.x/2.0;
-    float theta =    (gl_FragCoord.y/uResolution.y) -uResolution.y/2.0;
+    float phi_offset = 0.0;
+    float theta_offset = 0.0;
+
+    float phi =      (gl_FragCoord.x/uResolution.x *2.0*PI)/2.0+PI;// -uResolution.x/2.0;
+    float theta =    (gl_FragCoord.y/uResolution.y *2.0*PI);// -uResolution.y/2.0;
+
+
+
+    // phi = mod_f(float(phi), PI);
+    // theta = mod_f(float(theta), PI);
+
     direction = vec3(
-        sin(phi)*cos(theta),
-        sin(phi)*sin(theta),
-        cos(phi)
+        sin(phi + phi_offset)*cos(theta+theta_offset),
+        sin(phi + phi_offset)*sin(theta+theta_offset),
+        cos(phi + phi_offset)
     );
 
 
@@ -164,7 +174,7 @@ int getVoxel(int voxelIndex) {
 
 
 
-#define MAX_STEP 3000
+#define MAX_STEP 500
 
 int doTheMarchingThing(void) {
     // Says it all, do the marching thingy here
@@ -232,6 +242,8 @@ int doTheMarchingThing(void) {
                 rayDirection.z * crossX / rayDirection.x  // Adjust z component
             );
             checkDirection = sign(rayDirection) * vec3(0.5, 0, 0);
+            // checkDirection = sign(rayDirection) * vec3(0, 0.5, 0);
+            // checkDirection = sign(rayDirection) * vec3(0, 0, 0.5);
         }
 
         // If smallest is on Y
@@ -241,7 +253,9 @@ int doTheMarchingThing(void) {
                 crossY, // Adjust y component
                 rayDirection.z * crossY / rayDirection.y  // Adjust z component
             );
+            // checkDirection = sign(rayDirection) * vec3(0.5, 0, 0);
             checkDirection = sign(rayDirection) * vec3(0, 0.5, 0);
+            // checkDirection = sign(rayDirection) * vec3(0, 0, 0.5);
         }
 
         // If smallest is on Z
@@ -251,6 +265,8 @@ int doTheMarchingThing(void) {
                 rayDirection.y * crossZ / rayDirection.z, // Adjust y component
                 crossZ // Adjust z component
             );
+            // checkDirection = sign(rayDirection) * vec3(0.5, 0, 0);
+            // checkDirection = sign(rayDirection) * vec3(0, 0.5, 0);
             checkDirection = sign(rayDirection) * vec3(0, 0, 0.5);
         }
 
@@ -271,8 +287,8 @@ int doTheMarchingThing(void) {
 
 
         //overrides everything to use tiny steps
-        // increment = rayDirection*0.1;
-        // checkDirection = vec3(0, 0.5, 0);
+        increment = rayDirection*0.1;
+        checkDirection = vec3(0, 0.5, 0);
         // vec3 checkDirection = vec3(0, 0.5, 0);
 
         currentPosition += increment;

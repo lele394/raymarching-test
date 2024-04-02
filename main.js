@@ -208,10 +208,17 @@ document.addEventListener('keydown', (event) => CamHandleKeyDown(event, camera),
 document.addEventListener('keyup', CamHandleKeyUp, false);
 var camera = {
   position : {
-    x: -7,
-    y: -2.2,
-    z: 34.5,
+    x: -4,
+    y: 7,
+    z: 7,
   },
+
+  // position : {
+  //   x: 0,
+  //   y: 0,
+  //   z: -10,
+  // },
+
   rotation : {
     x: 0,
     y: 0,
@@ -230,7 +237,7 @@ function render() {
 
   UpdateGL3float('camPosition', camera.position.x, camera.position.y, camera.position.z);
 
-  UpdateGL1float('FOV', 90 );
+  UpdateGL1float('FOV', 100 );
   
   
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -250,6 +257,7 @@ function cameraLoop() {
     // update the camera position
     UpdateGL3float('camPosition', camera.position.x, camera.position.y, camera.position.z);
     console.log(camera.position);
+    render()
   }
 
   requestAnimationFrame(cameraLoop);

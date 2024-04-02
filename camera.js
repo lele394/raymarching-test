@@ -46,25 +46,25 @@ export function updateCamera(camera) {
     //     camera.rotation.y -= rotationSpeed;
     // }
 
-    if (keysPressed[keyboard.front]) {
+    if (keysPressed[keyboard.right]) {
         // Go forward
         camera.position.x -= Math.sin(camera.rotation.y) * movementSpeed;
         camera.position.z -= Math.cos(camera.rotation.y) * movementSpeed;
         status = true;
     }
-    if (keysPressed[keyboard.back]) {
+    if (keysPressed[keyboard.left]) {
         // Go backward
         camera.position.x += Math.sin(camera.rotation.y) * movementSpeed;
         camera.position.z += Math.cos(camera.rotation.y) * movementSpeed;
         status = true;
     }
-    if (keysPressed[keyboard.left]) {
+    if (keysPressed[keyboard.back]) {
         // Go right
         camera.position.x += Math.sin(camera.rotation.y - Math.PI / 2) * movementSpeed;
         camera.position.z += Math.cos(camera.rotation.y - Math.PI / 2) * movementSpeed;
         status = true;
     }
-    if (keysPressed[keyboard.right]) {
+    if (keysPressed[keyboard.front]) {
         // Go left
         camera.position.x += Math.sin(camera.rotation.y + Math.PI / 2) * movementSpeed;
         camera.position.z += Math.cos(camera.rotation.y + Math.PI / 2) * movementSpeed;
