@@ -237,25 +237,21 @@ int doTheMarchingThing(void) {
         // If smallest is on X
         if (crossX < crossY && crossX < crossZ) {
             increment = vec3(
-                crossX, // Adjust x component
+                rayDirection.x * crossX / rayDirection.x, // Adjust x component
                 rayDirection.y * crossX / rayDirection.x, // Adjust y component
                 rayDirection.z * crossX / rayDirection.x  // Adjust z component
             );
-            checkDirection = sign(rayDirection) * vec3(0.5, 0, 0);
-            // checkDirection = sign(rayDirection) * vec3(0, 0.5, 0);
-            // checkDirection = sign(rayDirection) * vec3(0, 0, 0.5);
+            checkDirection = vec3(0.5, 0, 0);
         }
 
         // If smallest is on Y
         if (crossY < crossX && crossY < crossZ) {
             increment = vec3(
                 rayDirection.x * crossY / rayDirection.y, // Adjust x component
-                crossY, // Adjust y component
+                rayDirection.y * crossY / rayDirection.y, // Adjust y component
                 rayDirection.z * crossY / rayDirection.y  // Adjust z component
             );
-            // checkDirection = sign(rayDirection) * vec3(0.5, 0, 0);
-            checkDirection = sign(rayDirection) * vec3(0, 0.5, 0);
-            // checkDirection = sign(rayDirection) * vec3(0, 0, 0.5);
+            checkDirection = vec3(0, 0.5, 0);
         }
 
         // If smallest is on Z
@@ -263,11 +259,9 @@ int doTheMarchingThing(void) {
             increment = vec3(
                 rayDirection.x * crossZ / rayDirection.z, // Adjust x component
                 rayDirection.y * crossZ / rayDirection.z, // Adjust y component
-                crossZ // Adjust z component
+                rayDirection.z * crossZ / rayDirection.z // Adjust z component
             );
-            // checkDirection = sign(rayDirection) * vec3(0.5, 0, 0);
-            // checkDirection = sign(rayDirection) * vec3(0, 0.5, 0);
-            checkDirection = sign(rayDirection) * vec3(0, 0, 0.5);
+            checkDirection = vec3(0, 0, 0.5);
         }
 
         /*
@@ -287,14 +281,15 @@ int doTheMarchingThing(void) {
 
 
         //overrides everything to use tiny steps
-        increment = rayDirection*0.1;
-        checkDirection = vec3(0, 0.5, 0);
+        // increment = rayDirection*0.1;
+        // checkDirection = vec3(0, 0.5, 0);
         // vec3 checkDirection = vec3(0, 0.5, 0);
 
         currentPosition += increment;
 
         // collision check
-        vec3 checkPointPosition = currentPosition+checkDirection;
+        vec3 checkPointPosition = currentPosition-increment/2.0;
+        // vec3 checkPointPosition = currentPosition+checkDirection;
         int voxel = getVoxel(getVolumeIndex(
             int(floor(checkPointPosition.x)),
             int(floor(checkPointPosition.y)),
