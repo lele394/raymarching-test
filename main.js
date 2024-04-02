@@ -178,8 +178,8 @@ setUniformColors(gl, shaderProgram);
 
 // set volumetric data
 let volume = [];
-for (let i = 0; i < 14*14*14; i++) {
-  volume.push(20)
+for (let i = 0; i < 14 * 14 * 14; i++) {
+  volume.push(Math.floor(Math.random() * 255)); // Generate a random number between 0 and 256
 }
 // adds a cube to the volume
 // volume[14*7+14*7+14*7] = 100; // mid
@@ -201,11 +201,23 @@ console.log(volume);
 
 
 
-
+// ======= CAMERA STUFF ========
+import { CamHandleKeyDown, CamHandleKeyUp, updateCamera } from './camera.js';
+// Add event listener for keydown events for camera movements
+document.addEventListener('keydown', (event) => CamHandleKeyDown(event, camera), false);
+document.addEventListener('keyup', CamHandleKeyUp, false);
 var camera = {
-  x: 1,
-  y: -1,
-  z: 1,
+  position : {
+    x: -7,
+    y: -2.2,
+    z: 34.5,
+  },
+
+  rotation : {
+    x: 0,
+    y: 0,
+    z: 0
+  }
 }
 
 
@@ -217,7 +229,7 @@ function render() {
 
   UpdateGL1float('col', 0.3 );
 
-  UpdateGL3float('camPosition', camera.x, camera.y, camera.z);
+  UpdateGL3float('camPosition', camera.position.x, camera.position.y, camera.position.z);
 
   UpdateGL1float('FOV', 90 );
   
@@ -231,23 +243,40 @@ function render() {
   //requestAnimationFrame(render);
 }
 
+// it's here for now
+function cameraLoop() {
+  var status = updateCamera(camera);
+
+  if(status){
+    // update the camera position
+    UpdateGL3float('camPosition', camera.position.x, camera.position.y, camera.position.z);
+    console.log(camera.position);
+  }
+
+  requestAnimationFrame(cameraLoop);
+}
+cameraLoop();
+document.addEventListener('keydown', (event) => {if(event.key == "*"){render();console.log("rendering")}}, false);
+
+
+
 
 // sets canva size
 // Set the screen size and pass it to the shader
+// canvas.width = window.innerWidth;
+// canvas.height = window.innerHeight;
 UpdateGL2float('uResolution', canvas.width, canvas.height);
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
 
 console.log(canvas.width, canvas.height);
 
-window.addEventListener('resize', () => {
-  UpdateGL2float('uResolution', canvas.width, canvas.height);
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  console.log(canvas.width, canvas.height);
-  // requestAnimationFrame(render);
-  render();
-});
+// window.addEventListener('resize', () => {
+//   canvas.width = window.innerWidth;
+//   canvas.height = window.innerHeight;
+//   UpdateGL2float('uResolution', canvas.width, canvas.height);
+//   console.log(canvas.width, canvas.height);
+//   // requestAnimationFrame(render);
+//   render();
+// });
 
 // requestAnimationFrame(render);
 render();

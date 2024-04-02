@@ -1,6 +1,8 @@
 
 precision mediump float;
 
+#define INFINITY +(1.0/0.0);
+
 #define COLOR_SIZE 256
 uniform vec3 colors[COLOR_SIZE];
 
@@ -22,7 +24,12 @@ uniform vec3 camPosition;
 // VERY BAD OPTIMIZATION
 vec3 getColorFromBinary(int binaryIndex) {
     const int numColors = COLOR_SIZE; // Number of colors
-    const vec3 defaultColor = vec3(0.0); // Default color if index is out of bounds
+    const vec3 defaultColor = vec3(0.0, 1.0, 0.0); // Default color if index is out of bounds
+
+    if (binaryIndex == -1) {
+        return defaultColor;
+    }
+
 
     // Loop through the colors array to find the matching index
     for (int i = 0; i < numColors; i++) {
@@ -72,19 +79,44 @@ vec3 GetRayDirection(void)
     float nearPlaneY = tan(halfFovRadians) * (1.0 - 2.0 * ndc.y);
 
     // Construct the direction vector in camera space
-    vec3 direction = normalize(vec3(nearPlaneX, nearPlaneY, -1.0));
+    vec3 direction = normalize(vec3(nearPlaneX, nearPlaneY, 0.0));
+
+
+    direction = normalize(vec3(
+        gl_FragCoord.xy/uResolution.xy, 0
+    ));
 
 
     // ===========================================================================================================DEBUG TEST DIRECTION
     // return vec3(0, 1, 0);
+    float phi_step = 0.01;
+    float theta_step = 0.01;
+
+    float phi =    (gl_FragCoord.x/uResolution.x) -uResolution.x/2.0;
+    float theta =    (gl_FragCoord.y/uResolution.y) -uResolution.y/2.0;
+    direction = vec3(
+        sin(phi)*cos(theta),
+        sin(phi)*sin(theta),
+        cos(phi)
+    );
+
+
+
+
 
     return direction;
+
 }
 
 
 
 
 int getVolumeIndex(int x, int y, int z) {
+    // return outside of the array is we are out of the voxel box.
+    if (x < 0 || x >= VOXEL_X || y < 0 || y >= VOXEL_Y || z < 0 || z >= VOXEL_Z) {
+        // Return a value indicating out of bounds
+        return -1;
+    }
     return x + y * VOXEL_X + z * VOXEL_X * VOXEL_Y;
 }
 
@@ -96,6 +128,12 @@ int getVoxel(int voxelIndex) {
     const int numVoxels = VOXEL_X*VOXEL_Y*VOXEL_Z; // Number of colors
     const int defaultVoxel = -1; // return -1 if there's no voxel here
 
+    // if value is found to be out of bound already
+    if (voxelIndex == -1){
+        return defaultVoxel;
+    }
+
+
     // Loop through the colors array to find the matching index
     for (int i = 0; i < numVoxels; i++) {
         if (i == voxelIndex) {
@@ -104,41 +142,27 @@ int getVoxel(int voxelIndex) {
     }
 
     // Return default color if index is out of bounds
-    return defaultVoxel;
+    // return defaultVoxel;
 }
 
 
 
 
-#define MAX_STEP 20
+#define MAX_STEP 30000
 
 int doTheMarchingThing(void) {
     // Says it all, do the marching thingy here
     // Might wanna return the distance value to implement some kind of "fog"
     
     // Background color, if no hit is reached, don't do anything
-    int index = 0;
-    
-    int step_counter = 0;
-
+    int return_if_no_hit = 0;
     vec3 rayDirection = GetRayDirection();
-
-    // increments
-    vec3 increments = vec3(0,0,0);
-
-
-    // float dxdy = rayDirection.x/rayDirection.y;
-    // float dxdz = rayDirection.x/rayDirection.z;
-
-    // float dydz = rayDirection.y/rayDirection.z;
-    // float dydx = rayDirection.y/rayDirection.x;
-
-    // float dzdx = rayDirection.z/rayDirection.x;
-    // float dzdy = rayDirection.z/rayDirection.y;
-
-
+    vec3 increment;
 
     vec3 currentPosition = camPosition;
+
+
+
 
     // Until we hit something or too many steps:
     for (int step_counter = 0; step_counter < MAX_STEP; step_counter++) {
@@ -150,7 +174,7 @@ int doTheMarchingThing(void) {
         // Did we hit something?
             // if yes, stop loop and set index to color of the cube
 
-
+        /*
         // returns position to a unit cube
         vec3 unitCube = vec3(
             mod_f(currentPosition.x, 1.0),
@@ -160,67 +184,84 @@ int doTheMarchingThing(void) {
 
         // x = -b/a where b = unitCube coordinates, a = correct one from ray direction
 
+
+
+
+        // ================= SOMETHING WRONG HERE ======================
         // on x
-        float crossX = -unitCube.x/rayDirection.x;
+        float crossX = rayDirection.x != 0.0 ? (1.0 - unitCube.x) / rayDirection.x : INFINITY;
 
         // on y
-        float crossY = -unitCube.y/rayDirection.y;
+        float crossY = rayDirection.y != 0.0 ? (1.0 - unitCube.y) / rayDirection.y : INFINITY;
 
         // on z
-        float crossZ = -unitCube.z/rayDirection.z;
+        float crossZ = rayDirection.z != 0.0 ? (1.0 - unitCube.z) / rayDirection.z : INFINITY;
 
 
-        // get the minimum increment 
-        // float minCross = min(crossX, min(crossY, crossZ));
+
+        vec3 checkDirection;
 
 
-        vec3 checkDirection = vec3(0, 0, 0);
 
-        // if smallest is on X
-        if (crossX<crossY && crossX<crossZ) {
-            vec3 increment = vec3(
-                crossX,
-                crossX*rayDirection.y,
-                crossX*rayDirection.z
+
+
+
+
+
+
+
+
+        // If smallest is on X
+        if (crossX < crossY && crossX < crossZ) {
+            increment = vec3(
+                crossX, // Adjust x component
+                rayDirection.y * crossX, // Adjust y component
+                rayDirection.z * crossX  // Adjust z component
             );
+            checkDirection = sign(rayDirection) * vec3(0.5, 0, 0);
+        }
 
-            checkDirection = sign(crossX)*vec3(0.5, 0, 0);
-            return 30;
-            
-        } 
-
-        // if smallest is on Y
-        if (crossY<crossX && crossY<crossZ) {
-            vec3 increment = vec3(
-                crossY*rayDirection.x,
-                crossY,
-                crossY*rayDirection.z
+        // If smallest is on Y
+        if (crossY < crossX && crossY < crossZ) {
+            increment = vec3(
+                rayDirection.x * crossY, // Adjust x component
+                crossY, // Adjust y component
+                rayDirection.z * crossY  // Adjust z component
             );
+            checkDirection = sign(rayDirection) * vec3(0, 0.5, 0);
+        }
 
-            checkDirection = sign(crossY)*vec3(0, 0.5, 0);
-            return 30;
-            
+        // If smallest is on Z
+        if (crossZ < crossX && crossZ < crossY) {
+            increment = vec3(
+                rayDirection.x * crossZ, // Adjust x component
+                rayDirection.y * crossZ, // Adjust y component
+                crossZ // Adjust z component
+            );
+            checkDirection = sign(rayDirection) * vec3(0, 0, 0.5);
         }
 
 
-        // if smallest is on Z
-        if (crossY<crossX && crossY<crossZ) {
-            vec3 increment = vec3(
-                crossZ*rayDirection.x,
-                crossZ*rayDirection.y,
-                crossZ
-            );
-
-            checkDirection = sign(crossZ)*vec3(0, 0, 0.5);
-            return 30;
-            
-        }
+        */
 
 
 
-        // increment the current position by the compute increment
-        currentPosition += increments;
 
+
+
+
+
+        // ============================= wrong until here ===============================
+
+
+
+
+
+        //overrides everything to use tiny steps
+        increment = rayDirection*0.1;
+        vec3 checkDirection = vec3(0, 0.5, 0);
+
+        currentPosition += increment;
 
         // collision check
         vec3 checkPointPosition = currentPosition+checkDirection;
@@ -231,19 +272,15 @@ int doTheMarchingThing(void) {
         ));
 
         // if -1 then nothing in that cube
+        // voxel = getVoxel(getVolumeIndex(10,10,10));
         if(voxel >= 0) {
             return voxel;
-            return 200;
         }
-
-    
-
     }
 
-
-
-
-    return index;
+    // return 3;
+    // return int(currentPosition.y);
+    return return_if_no_hit;
 }
 
 
@@ -255,21 +292,24 @@ int doTheMarchingThing(void) {
 
 void main(void) {
 
-    ivec2 pixelPosition = ivec2(gl_FragCoord.xy); // Get the pixel position
+    // ivec2 pixelPosition = ivec2(gl_FragCoord.xy); // Get the pixel position
     // int color_index = int(mod(float(pixelPosition.x + pixelPosition.y) , float(COLOR_SIZE))); // Calculate color_index using custom modulo function
     // int color_index = int(mod(float(pixelPosition.y) / float(16), float(16))) * 16 + int(mod(float(pixelPosition.x) / float(16), float(16)));
 
-    // debug
-    gl_FragColor = vec4(GetRayDirection(), 1.0);
-    return;
 
 
 
     int color_index = doTheMarchingThing();
 
 
+    // escape for debugging so i can output shit as i wish in my marching DDA
+    // return;
 
-    // Use dynamic indexing to access color using the variable index
+    // color_index = 100; // teal
+    // color_index = 200; // kinda dark red
+    // color_index = 50; // dark green
+
+    // i'll modify the for loop while keeping the nested thingy cuz glsl mad >:(
     vec3 final = getColorFromBinary(color_index);
 
     // Use final color as needed
