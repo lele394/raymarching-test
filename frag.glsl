@@ -148,7 +148,23 @@ int getVoxel(int voxelIndex) {
 
 
 
-#define MAX_STEP 30000
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#define MAX_STEP 3000
 
 int doTheMarchingThing(void) {
     // Says it all, do the marching thingy here
@@ -174,7 +190,6 @@ int doTheMarchingThing(void) {
         // Did we hit something?
             // if yes, stop loop and set index to color of the cube
 
-        /*
         // returns position to a unit cube
         vec3 unitCube = vec3(
             mod_f(currentPosition.x, 1.0),
@@ -189,34 +204,32 @@ int doTheMarchingThing(void) {
 
         // ================= SOMETHING WRONG HERE ======================
         // on x
-        float crossX = rayDirection.x != 0.0 ? (1.0 - unitCube.x) / rayDirection.x : INFINITY;
+        float crossX = rayDirection.x != 0.0 ? (sign(rayDirection.x) * (1.0 - abs(unitCube.x))) / abs(rayDirection.x) : INFINITY;
 
         // on y
-        float crossY = rayDirection.y != 0.0 ? (1.0 - unitCube.y) / rayDirection.y : INFINITY;
+        float crossY = rayDirection.y != 0.0 ? (sign(rayDirection.y) * (1.0 - abs(unitCube.y))) / abs(rayDirection.y) : INFINITY;
 
         // on z
-        float crossZ = rayDirection.z != 0.0 ? (1.0 - unitCube.z) / rayDirection.z : INFINITY;
+        float crossZ = rayDirection.z != 0.0 ? (sign(rayDirection.z) * (1.0 - abs(unitCube.z))) / abs(rayDirection.z) : INFINITY;
+
+
+
+
+
+
+
+
 
 
 
         vec3 checkDirection;
 
-
-
-
-
-
-
-
-
-
-
         // If smallest is on X
         if (crossX < crossY && crossX < crossZ) {
             increment = vec3(
                 crossX, // Adjust x component
-                rayDirection.y * crossX, // Adjust y component
-                rayDirection.z * crossX  // Adjust z component
+                rayDirection.y * crossX / rayDirection.x, // Adjust y component
+                rayDirection.z * crossX / rayDirection.x  // Adjust z component
             );
             checkDirection = sign(rayDirection) * vec3(0.5, 0, 0);
         }
@@ -224,9 +237,9 @@ int doTheMarchingThing(void) {
         // If smallest is on Y
         if (crossY < crossX && crossY < crossZ) {
             increment = vec3(
-                rayDirection.x * crossY, // Adjust x component
+                rayDirection.x * crossY / rayDirection.y, // Adjust x component
                 crossY, // Adjust y component
-                rayDirection.z * crossY  // Adjust z component
+                rayDirection.z * crossY / rayDirection.y  // Adjust z component
             );
             checkDirection = sign(rayDirection) * vec3(0, 0.5, 0);
         }
@@ -234,14 +247,14 @@ int doTheMarchingThing(void) {
         // If smallest is on Z
         if (crossZ < crossX && crossZ < crossY) {
             increment = vec3(
-                rayDirection.x * crossZ, // Adjust x component
-                rayDirection.y * crossZ, // Adjust y component
+                rayDirection.x * crossZ / rayDirection.z, // Adjust x component
+                rayDirection.y * crossZ / rayDirection.z, // Adjust y component
                 crossZ // Adjust z component
             );
             checkDirection = sign(rayDirection) * vec3(0, 0, 0.5);
         }
 
-
+        /*
         */
 
 
@@ -258,8 +271,9 @@ int doTheMarchingThing(void) {
 
 
         //overrides everything to use tiny steps
-        increment = rayDirection*0.1;
-        vec3 checkDirection = vec3(0, 0.5, 0);
+        // increment = rayDirection*0.1;
+        // checkDirection = vec3(0, 0.5, 0);
+        // vec3 checkDirection = vec3(0, 0.5, 0);
 
         currentPosition += increment;
 

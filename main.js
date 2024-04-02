@@ -212,7 +212,6 @@ var camera = {
     y: -2.2,
     z: 34.5,
   },
-
   rotation : {
     x: 0,
     y: 0,
