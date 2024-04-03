@@ -179,8 +179,27 @@ setUniformColors(gl, shaderProgram);
 // set volumetric data
 let volume = [];
 for (let i = 0; i < 14 * 14 * 14; i++) {
-  volume.push(Math.floor(Math.random() * 255)); // Generate a random number between 0 and 256
+  // volume.push(Math.floor(Math.random() * 255)); // Generate a random number between 0 and 256
+  volume.push(Math.floor(i % 255));
 }
+let rotatedVolume = [];
+for (let z = 0; z < 14; z++) {
+    for (let y = 0; y < 14; y++) {
+        for (let x = 0; x < 14; x++) {
+            let rotatedX = z;
+            let rotatedY = 14 - x - 1;
+            let rotatedZ = y;
+            let index = x + y * 14 + z * 14 * 14;
+            let rotatedIndex = rotatedX + rotatedY * 14 + rotatedZ * 14 * 14;
+            rotatedVolume[rotatedIndex] = volume[index];
+        }
+    }
+}
+
+
+
+
+
 // adds a cube to the volume
 // volume[14*7+14*7+14*7] = 100; // mid
 // volume[14*0+14*0+14*0] = 100; //bot
@@ -195,7 +214,7 @@ for (let i = 0; i < 14 * 14 * 14; i++) {
 
 
 const volumeLocation = gl.getUniformLocation(shaderProgram, "volume");
-gl.uniform1iv(volumeLocation, volume);
+gl.uniform1iv(volumeLocation, rotatedVolume);
 
 console.log(volume);
 
@@ -223,6 +242,11 @@ var camera = {
     x: 0,
     y: 0,
     z: 0
+  },
+
+  rotation_polar : {
+    x: 3.14/2+3.14,
+    y: 0
   }
 }
 
@@ -236,6 +260,7 @@ function render() {
   UpdateGL1float('col', 0.3 );
 
   UpdateGL3float('camPosition', camera.position.x, camera.position.y, camera.position.z);
+  UpdateGL3float('camRotation', camera.rotation_polar.x, camera.rotation_polar.y, 0);
 
   UpdateGL1float('FOV', 100 );
   
@@ -254,9 +279,10 @@ function cameraLoop() {
   var status = updateCamera(camera);
 
   if(status){
-    // update the camera position
-    UpdateGL3float('camPosition', camera.position.x, camera.position.y, camera.position.z);
-    console.log(camera.position);
+    // update the camera position // USELESSS here, it's in render()
+    // UpdateGL3float('camPosition', camera.position.x, camera.position.y, camera.position.z);
+    console.log("position", camera.position);
+    console.log("rotation", camera.rotation_polar);
     render()
   }
 

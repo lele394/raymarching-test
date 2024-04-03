@@ -37,37 +37,39 @@ export function updateCamera(camera) {
     };
 
 
-    // if (keysPressed[keyboard.r_left]) {
-    //     // Rotate camera left
-    //     camera.rotation.y += rotationSpeed;
-    // }
-    // if (keysPressed[keyboard.r_right]) {
-    //     // Rotate camera right
-    //     camera.rotation.y -= rotationSpeed;
-    // }
-
-    if (keysPressed[keyboard.right]) {
-        // Go forward
-        camera.position.x -= Math.sin(camera.rotation.y) * movementSpeed;
-        camera.position.z -= Math.cos(camera.rotation.y) * movementSpeed;
+    if (keysPressed[keyboard.r_left]) {
+        // Rotate camera left
+        camera.rotation_polar.x += rotationSpeed;
         status = true;
     }
+    if (keysPressed[keyboard.r_right]) {
+        // Rotate camera right
+        camera.rotation_polar.x -= rotationSpeed;
+        status = true;
+    }
+
     if (keysPressed[keyboard.left]) {
+        // Go forward
+        camera.position.x -= Math.sin(camera.rotation_polar.x) * movementSpeed;
+        camera.position.z -= Math.cos(camera.rotation_polar.x) * movementSpeed;
+        status = true;
+    }
+    if (keysPressed[keyboard.right]) {
         // Go backward
-        camera.position.x += Math.sin(camera.rotation.y) * movementSpeed;
-        camera.position.z += Math.cos(camera.rotation.y) * movementSpeed;
+        camera.position.x += Math.sin(camera.rotation_polar.x) * movementSpeed;
+        camera.position.z += Math.cos(camera.rotation_polar.x) * movementSpeed;
         status = true;
     }
     if (keysPressed[keyboard.back]) {
         // Go right
-        camera.position.x += Math.sin(camera.rotation.y - Math.PI / 2) * movementSpeed;
-        camera.position.z += Math.cos(camera.rotation.y - Math.PI / 2) * movementSpeed;
+        camera.position.x += Math.sin(camera.rotation_polar.x - Math.PI / 2) * movementSpeed;
+        camera.position.z += Math.cos(camera.rotation_polar.x - Math.PI / 2) * movementSpeed;
         status = true;
     }
     if (keysPressed[keyboard.front]) {
         // Go left
-        camera.position.x += Math.sin(camera.rotation.y + Math.PI / 2) * movementSpeed;
-        camera.position.z += Math.cos(camera.rotation.y + Math.PI / 2) * movementSpeed;
+        camera.position.x += Math.sin(camera.rotation_polar.x + Math.PI / 2) * movementSpeed;
+        camera.position.z += Math.cos(camera.rotation_polar.x + Math.PI / 2) * movementSpeed;
         status = true;
     }
     

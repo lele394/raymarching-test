@@ -19,6 +19,7 @@ uniform float col;
 uniform float FOV;
 
 uniform vec3 camPosition;
+uniform vec3 camRotation;
 
 
 // OK SO THAT GETS THE COLOR WITHOUT UGLY IF ELSES
@@ -61,60 +62,73 @@ float mod_f(float x, float y) {
 
 
 
+// Define rotation matrices
+mat3 rotateX(float angle) {
+    float c = cos(angle);
+    float s = sin(angle);
+    return mat3(
+        1.0, 0.0, 0.0,
+        0.0, c, -s,
+        0.0, s, c
+    );
+}
 
+mat3 rotateY(float angle) {
+    float c = cos(angle);
+    float s = sin(angle);
+    return mat3(
+        c, 0.0, s,
+        0.0, 1.0, 0.0,
+        -s, 0.0, c
+    );
+}
 
 vec3 GetRayDirection(void)
 {
-    // Calculate aspect ratio
-    float aspectRatio = uResolution.x / uResolution.y;
 
-    // Calculate normalized device coordinates (NDC) of the pixel
-    vec2 ndc = gl_FragCoord.xy / uResolution;
-
-    // Calculate the half FOV in radians
-    float fovRadians = radians(FOV);
-    float halfFovRadians = fovRadians / 2.0;
-
-    // Calculate the coordinates on the near plane in camera space
-    float nearPlaneX = tan(halfFovRadians) * (2.0 * ndc.x - 1.0) * aspectRatio;
-    float nearPlaneY = tan(halfFovRadians) * (1.0 - 2.0 * ndc.y);
-
-    // Construct the direction vector in camera space
-    vec3 direction = normalize(vec3(nearPlaneX, nearPlaneY, 0.0));
+    // camera angles conversion
+    float cam_phi = camRotation.y;
+    float cam_theta = camRotation.x;
 
 
-    direction = normalize(vec3(
-        gl_FragCoord.xy/uResolution.xy, 0
-    ));
-
-
-    // ===========================================================================================================DEBUG TEST DIRECTION
-    // return vec3(0, 1, 0);
-    // float phi_step = 0.5;
-    // float theta_step = 0.5;
-
-    float phi_offset = 0.0;
-    float theta_offset = 0.0;
-
-    float phi =      (gl_FragCoord.x/uResolution.x *2.0*PI)/2.0+PI;// -uResolution.x/2.0;
-    float theta =    (gl_FragCoord.y/uResolution.y *2.0*PI);// -uResolution.y/2.0;
-
-
-
-    // phi = mod_f(float(phi), PI);
-    // theta = mod_f(float(theta), PI);
-
-    direction = vec3(
-        sin(phi + phi_offset)*cos(theta+theta_offset),
-        sin(phi + phi_offset)*sin(theta+theta_offset),
-        cos(phi + phi_offset)
+    // Define camera angles
+    // float cam_phi = camRotation.y;
+    // float cam_theta = 0.0;
+    vec3 direction = vec3(
+        sin(cam_phi)*cos(cam_theta),
+        sin(cam_phi)*sin(cam_theta),
+        cos(cam_phi)
     );
+    
+    direction = rotateY(cam_theta ) * rotateX(cam_phi ) * direction;
+    // Ray direction of the camera ^
+
+
+    vec3 rayDirection = direction;
+
+    // Compute ray direction for each pixel
+    vec2 uv = gl_FragCoord.xy / uResolution.xy;
+    vec3 right = normalize(cross(vec3(0.0, 1.0, 0.0), direction)); // Compute the right vector perpendicular to the view direction
+    vec3 up = normalize(cross(direction, right)); // Compute the up vector perpendicular to both view and right vector
+
+    // Convert pixel coordinates to screen coordinates
+    vec2 screenCoordinates = (uv - 0.5) * 2.0;
+    vec3 pixelDirection = normalize(direction + screenCoordinates.x * right + screenCoordinates.y * up);
+
+    
 
 
 
 
 
-    return direction;
+
+
+
+
+
+
+    return pixelDirection;
+    // return direction;
 
 }
 
@@ -281,7 +295,7 @@ int doTheMarchingThing(void) {
 
 
         //overrides everything to use tiny steps
-        // increment = rayDirection*0.1;
+        increment = rayDirection*0.1;
         // checkDirection = vec3(0, 0.5, 0);
         // vec3 checkDirection = vec3(0, 0.5, 0);
 
