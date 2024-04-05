@@ -298,7 +298,7 @@ document.addEventListener('keydown', (event) => {if(event.key == "*"){render();c
 
 // display mode switch
 let displayMode = 0;
-document.addEventListener('keydown', (event) => {if(event.key == "$"){ displayMode = (displayMode+1)%2; UpdateGL1int('displayMode', displayMode ); console.log(displayMode);render();}}, false);
+document.addEventListener('keydown', (event) => {if(event.key == "$"){ displayMode = (displayMode+1)%3; UpdateGL1int('displayMode', displayMode ); console.log(displayMode);render();}}, false);
 
 
 

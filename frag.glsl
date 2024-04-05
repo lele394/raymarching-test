@@ -224,8 +224,9 @@ vec3 rayCubeIntersection(vec3 rayOrigin, vec3 rayDirection) {
 
 
 
-#define MAX_STEP 500
+#define MAX_STEP 200
 int steps = 0;
+float dist;
 int doTheMarchingThing(void) {
     // Says it all, do the marching thingy here
     // Might wanna return the distance value to implement some kind of "fog"
@@ -289,7 +290,7 @@ int doTheMarchingThing(void) {
         }
 
 
-        vec3 increment = rayDirection * min(crossX/rayDirection.x, min(crossY/rayDirection.y, crossZ/rayDirection.z));
+        vec3 increment = rayDirection * min(crossX/rayDirection.x, min(crossY/rayDirection.y, crossZ/rayDirection.z)) + vec3(0.0);
 
 
         // IDK ANYMORE DDA HERE
@@ -315,14 +316,15 @@ int doTheMarchingThing(void) {
         vec3 checkPointPosition = currentPosition-increment/2.0;
         // vec3 checkPointPosition = currentPosition+checkDirection;
         int voxel = getVoxel(getVolumeIndex(
-            int(floor(checkPointPosition.x)),
-            int(floor(checkPointPosition.y)),
-            int(floor(checkPointPosition.z))
+            int(floor(checkPointPosition.x)+1.0),
+            int(floor(checkPointPosition.y)+1.0),
+            int(floor(checkPointPosition.z)+1.0)
         ));
 
         // if -1 then nothing in that cube
         // voxel = getVoxel(getVolumeIndex(10,10,10));
         if(voxel >= 0) {
+            dist = length(currentPosition-camPosition);
             return voxel;
         }
     }
@@ -370,6 +372,11 @@ void main(void) {
         // outputs the number of steps
         float step_perc = float(steps) / float(MAX_STEP);
         gl_FragColor = vec4(step_perc, step_perc, step_perc, 1.0);
+    }
+    else if (displayMode == 2) {
+        // outputs the number of steps
+        float dist_val = 1.0 - float(dist) / float(MAX_STEP);
+        gl_FragColor = vec4(dist_val, dist_val, dist_val, 1.0);
     }
 
 
