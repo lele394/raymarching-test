@@ -33,7 +33,9 @@ export function updateCamera(camera) {
         front : "z",
         back : "s",
         r_right :"e",
-        r_left : "a"
+        r_left : "a",
+        r_up : "t",
+        r_down : "g"
     };
 
 
@@ -48,28 +50,45 @@ export function updateCamera(camera) {
         status = true;
     }
 
-    if (keysPressed[keyboard.left]) {
-        // Go forward
-        camera.position.x -= Math.sin(camera.rotation_polar.x) * movementSpeed;
-        camera.position.z -= Math.cos(camera.rotation_polar.x) * movementSpeed;
+
+    // up dwon rotations
+    if (keysPressed[keyboard.r_up]) {
+        // Rotate camera left
+        camera.rotation_polar.y += rotationSpeed;
         status = true;
     }
-    if (keysPressed[keyboard.right]) {
-        // Go backward
-        camera.position.x += Math.sin(camera.rotation_polar.x) * movementSpeed;
+    if (keysPressed[keyboard.r_down]) {
+        // Rotate camera right
+        camera.rotation_polar.y -= rotationSpeed;
+        status = true;
+    }
+
+
+
+
+    
+    if (keysPressed[keyboard.front]) {
+        // Go forward
+        camera.position.x -= Math.sin(camera.rotation_polar.x) * movementSpeed;
         camera.position.z += Math.cos(camera.rotation_polar.x) * movementSpeed;
         status = true;
     }
     if (keysPressed[keyboard.back]) {
-        // Go right
-        camera.position.x += Math.sin(camera.rotation_polar.x - Math.PI / 2) * movementSpeed;
-        camera.position.z += Math.cos(camera.rotation_polar.x - Math.PI / 2) * movementSpeed;
+        // Go backward
+        camera.position.x += Math.sin(camera.rotation_polar.x) * movementSpeed;
+        camera.position.z -= Math.cos(camera.rotation_polar.x) * movementSpeed;
         status = true;
     }
-    if (keysPressed[keyboard.front]) {
+    if (keysPressed[keyboard.left]) {
+        // Go right
+        camera.position.x += Math.sin(camera.rotation_polar.x - Math.PI / 2) * movementSpeed;
+        camera.position.z -= Math.cos(camera.rotation_polar.x - Math.PI / 2) * movementSpeed;
+        status = true;
+    }
+    if (keysPressed[keyboard.right]) {
         // Go left
         camera.position.x += Math.sin(camera.rotation_polar.x + Math.PI / 2) * movementSpeed;
-        camera.position.z += Math.cos(camera.rotation_polar.x + Math.PI / 2) * movementSpeed;
+        camera.position.z -= Math.cos(camera.rotation_polar.x + Math.PI / 2) * movementSpeed;
         status = true;
     }
     

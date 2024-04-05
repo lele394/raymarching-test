@@ -109,7 +109,10 @@ function UpdateGL3float (name, value1, value2, value3 ){
 
 }
 
-
+function UpdateGL1int(name, value) {
+  var variable = gl.getUniformLocation(shaderProgram, name);
+  gl.uniform1i(variable, value);
+}
 
 
 // Define the colors array
@@ -227,7 +230,7 @@ document.addEventListener('keydown', (event) => CamHandleKeyDown(event, camera),
 document.addEventListener('keyup', CamHandleKeyUp, false);
 var camera = {
   position : {
-    x: -4,
+    x: -10,
     y: 7,
     z: 7,
   },
@@ -291,6 +294,11 @@ function cameraLoop() {
 cameraLoop();
 document.addEventListener('keydown', (event) => {if(event.key == "*"){render();console.log("rendering")}}, false);
 
+
+
+// display mode switch
+let displayMode = 0;
+document.addEventListener('keydown', (event) => {if(event.key == "$"){ displayMode = (displayMode+1)%2; UpdateGL1int('displayMode', displayMode ); console.log(displayMode);render();}}, false);
 
 
 

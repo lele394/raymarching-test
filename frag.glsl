@@ -7,6 +7,8 @@ precision mediump float;
 #define COLOR_SIZE 256
 uniform vec3 colors[COLOR_SIZE];
 
+uniform int displayMode;
+
 
 #define VOXEL_X 14 // Voxel space will be cubes of 14
 #define VOXEL_Y 14 // Voxel space will be cubes of 14
@@ -87,8 +89,8 @@ vec3 GetRayDirection(void)
 {
 
     // camera angles conversion
-    float cam_phi = camRotation.y;
     float cam_theta = camRotation.x;
+    float cam_phi = camRotation.y;
 
 
     // Define camera angles
@@ -177,6 +179,40 @@ int getVoxel(int voxelIndex) {
 
 
 
+vec3 rayCubeIntersection(vec3 rayOrigin, vec3 rayDirection) {
+    // Define the boundaries of the unit cube
+    vec3 minBound = vec3(-0.5);
+    vec3 maxBound = vec3(0.5);
+
+    // Compute intersection with each slab along the X axis
+    vec3 invDirection = 1.0 / rayDirection;
+    vec3 t1 = (minBound - rayOrigin) * invDirection;
+    vec3 t2 = (maxBound - rayOrigin) * invDirection;
+    vec3 tmin = min(t1, t2);
+    vec3 tmax = max(t1, t2);
+
+    // Compute intersection with each slab along the Y axis
+    float t1_y = (minBound.y - rayOrigin.y) * invDirection.y;
+    float t2_y = (maxBound.y - rayOrigin.y) * invDirection.y;
+    tmin.y = max(tmin.y, min(t1_y, t2_y)); // Update only the Y component
+    tmax.y = min(tmax.y, max(t1_y, t2_y)); // Update only the Y component
+
+    // Compute intersection with each slab along the Z axis
+    float t1_z = (minBound.z - rayOrigin.z) * invDirection.z;
+    float t2_z = (maxBound.z - rayOrigin.z) * invDirection.z;
+    tmin.z = max(tmin.z, min(t1_z, t2_z)); // Update only the Z component
+    tmax.z = min(tmax.z, max(t1_z, t2_z)); // Update only the Z component
+
+    // Check if ray intersects the cube
+    float tminMax = max(max(tmin.x, tmin.y), tmin.z);
+    float tmaxMin = min(min(tmax.x, tmax.y), tmax.z);
+    if (tminMax > tmaxMin || tmaxMin < 0.0)
+        return vec3(0.0); // No intersection
+
+    // Compute intersection point
+    return rayOrigin + rayDirection * tminMax;
+}
+
 
 
 
@@ -189,23 +225,29 @@ int getVoxel(int voxelIndex) {
 
 
 #define MAX_STEP 500
-
+int steps = 0;
 int doTheMarchingThing(void) {
     // Says it all, do the marching thingy here
     // Might wanna return the distance value to implement some kind of "fog"
     
     // Background color, if no hit is reached, don't do anything
     int return_if_no_hit = 0;
+
+    // initial values
     vec3 rayDirection = GetRayDirection();
     vec3 increment;
-
     vec3 currentPosition = camPosition;
+
+
+
+
 
 
 
 
     // Until we hit something or too many steps:
     for (int step_counter = 0; step_counter < MAX_STEP; step_counter++) {
+        steps += 1;
         // do one step using DDA
             // take the ray position, find interesction on x,y,z with the ray direction
             // Find the smallest between dx, dy and dz
@@ -215,75 +257,42 @@ int doTheMarchingThing(void) {
             // if yes, stop loop and set index to color of the cube
 
         // returns position to a unit cube
-        vec3 unitCube = vec3(
+        vec3 posInUnitCube = vec3(
             mod_f(currentPosition.x, 1.0),
             mod_f(currentPosition.y, 1.0),
             mod_f(currentPosition.z, 1.0)
         );
 
-        // x = -b/a where b = unitCube coordinates, a = correct one from ray direction
 
 
-
-
-        // ================= SOMETHING WRONG HERE ======================
+        // check where exit coordinates are
         // on x
-        float crossX = rayDirection.x != 0.0 ? (sign(rayDirection.x) * (1.0 - abs(unitCube.x))) / abs(rayDirection.x) : INFINITY;
-
-        // on y
-        float crossY = rayDirection.y != 0.0 ? (sign(rayDirection.y) * (1.0 - abs(unitCube.y))) / abs(rayDirection.y) : INFINITY;
-
-        // on z
-        float crossZ = rayDirection.z != 0.0 ? (sign(rayDirection.z) * (1.0 - abs(unitCube.z))) / abs(rayDirection.z) : INFINITY;
-
-
-
-
-
-
-
-
-
-
-
-        vec3 checkDirection;
-
-        // If smallest is on X
-        if (crossX < crossY && crossX < crossZ) {
-            increment = vec3(
-                rayDirection.x * crossX / rayDirection.x, // Adjust x component
-                rayDirection.y * crossX / rayDirection.x, // Adjust y component
-                rayDirection.z * crossX / rayDirection.x  // Adjust z component
-            );
-            checkDirection = vec3(0.5, 0, 0);
+        float crossX;
+        if (rayDirection.x > 0.0) { // if positive, check intersection on 0 
+            crossX = 1.0 - posInUnitCube.x;
+        } else {
+            crossX = -1.0 + posInUnitCube.x;
         }
 
-        // If smallest is on Y
-        if (crossY < crossX && crossY < crossZ) {
-            increment = vec3(
-                rayDirection.x * crossY / rayDirection.y, // Adjust x component
-                rayDirection.y * crossY / rayDirection.y, // Adjust y component
-                rayDirection.z * crossY / rayDirection.y  // Adjust z component
-            );
-            checkDirection = vec3(0, 0.5, 0);
+        float crossY;
+        if (rayDirection.y > 0.0) { // if positive, check intersection on 0 
+            crossY = 1.0 - posInUnitCube.y;
+        } else {
+            crossY = -1.0 + posInUnitCube.y;
         }
 
-        // If smallest is on Z
-        if (crossZ < crossX && crossZ < crossY) {
-            increment = vec3(
-                rayDirection.x * crossZ / rayDirection.z, // Adjust x component
-                rayDirection.y * crossZ / rayDirection.z, // Adjust y component
-                rayDirection.z * crossZ / rayDirection.z // Adjust z component
-            );
-            checkDirection = vec3(0, 0, 0.5);
+        float crossZ;
+        if (rayDirection.z > 0.0) { // if positive, check intersection on 0 
+            crossZ = 1.0 - posInUnitCube.z;
+        } else {
+            crossZ = -1.0 + posInUnitCube.z;
         }
 
-        /*
-        */
+
+        vec3 increment = rayDirection * min(crossX/rayDirection.x, min(crossY/rayDirection.y, crossZ/rayDirection.z));
 
 
-
-
+        // IDK ANYMORE DDA HERE
 
 
 
@@ -295,9 +304,10 @@ int doTheMarchingThing(void) {
 
 
         //overrides everything to use tiny steps
-        increment = rayDirection*0.1;
+        // increment = rayDirection*0.1;
         // checkDirection = vec3(0, 0.5, 0);
         // vec3 checkDirection = vec3(0, 0.5, 0);
+        // currentPosition += ray;
 
         currentPosition += increment;
 
@@ -348,11 +358,19 @@ void main(void) {
     // color_index = 200; // kinda dark red
     // color_index = 50; // dark green
 
-    // i'll modify the for loop while keeping the nested thingy cuz glsl mad >:(
-    vec3 final = getColorFromBinary(color_index);
 
-    // Use final color as needed
-    // For example, set fragment color
-    gl_FragColor = vec4(final, 1.0);
+
+    if (displayMode == 0) {
+        // i'll modify the for loop while keeping the nested thingy cuz glsl mad >:(
+        vec3 finalColor = getColorFromBinary(color_index);
+        // Use final color as needed
+        gl_FragColor = vec4(finalColor, 1.0);
+    }
+    else if (displayMode == 1) {
+        // outputs the number of steps
+        float step_perc = float(steps) / float(MAX_STEP);
+        gl_FragColor = vec4(step_perc, step_perc, step_perc, 1.0);
+    }
+
 
 }
