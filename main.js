@@ -180,20 +180,25 @@ setUniformColors(gl, shaderProgram);
 
 
 // set volumetric data
+let size = 15;
 let volume = [];
-for (let i = 0; i < 14 * 14 * 14; i++) {
+for (let i = 0; i < 16 * 16 * 16; i++) {
   // volume.push(Math.floor(Math.random() * 255)); // Generate a random number between 0 and 256
   volume.push(Math.floor(i % 255));
+  // volume.push(-1);
 }
+
+// volume[8+8*16] = 100;
+
 let rotatedVolume = [];
-for (let z = 0; z < 14; z++) {
-    for (let y = 0; y < 14; y++) {
-        for (let x = 0; x < 14; x++) {
+for (let z = 0; z < 16; z++) {
+    for (let y = 0; y < 16; y++) {
+        for (let x = 0; x < 16; x++) {
             let rotatedX = z;
-            let rotatedY = 14 - x - 1;
+            let rotatedY = 16 - x - 1;
             let rotatedZ = y;
-            let index = x + y * 14 + z * 14 * 14;
-            let rotatedIndex = rotatedX + rotatedY * 14 + rotatedZ * 14 * 14;
+            let index = x + y * 16 + z * 16 * 16;
+            let rotatedIndex = rotatedX + rotatedY * 16 + rotatedZ * 16 * 16;
             rotatedVolume[rotatedIndex] = volume[index];
         }
     }
@@ -230,9 +235,9 @@ document.addEventListener('keydown', (event) => CamHandleKeyDown(event, camera),
 document.addEventListener('keyup', CamHandleKeyUp, false);
 var camera = {
   position : {
-    x: -10,
-    y: 7,
-    z: 7,
+    x: -5,
+    y: 0,
+    z: 8.5,
   },
 
   // position : {
