@@ -117,45 +117,45 @@ function UpdateGL1int(name, value) {
 
 // Define the colors array
 // Colors available for rendering
-function generateColors_Good() {
-  const numColors = 16; // Number of colors
-  const numShades = 16; // Number of shades for each color
-  const colors = [];
+// function generateColors_Good() {
+//   const numColors = 16; // Number of colors
+//   const numShades = 16; // Number of shades for each color
+//   const colors = [];
 
-  // Define base colors
-  const baseColors = [
-      { r: 1.0, g: 0.0, b: 0.0 },  // Red
-      { r: 1.0, g: 0.5, b: 0.0 },  // Orange
-      { r: 1.0, g: 1.0, b: 0.0 },  // Yellow
-      { r: 0.5, g: 1.0, b: 0.0 },  // Lime
-      { r: 0.0, g: 1.0, b: 0.0 },  // Green
-      { r: 0.0, g: 1.0, b: 0.5 },  // Turquoise
-      { r: 0.0, g: 1.0, b: 1.0 },  // Cyan
-      { r: 0.0, g: 0.5, b: 1.0 },  // Azure
-      { r: 0.0, g: 0.0, b: 1.0 },  // Blue
-      { r: 0.5, g: 0.0, b: 1.0 },  // Indigo
-      { r: 1.0, g: 0.0, b: 1.0 },  // Violet
-      { r: 1.0, g: 0.0, b: 0.5 },  // Magenta
-      { r: 0.5, g: 0.0, b: 0.0 },  // Maroon
-      { r: 0.5, g: 0.25, b: 0.0 }, // Brown
-      { r: 0.25, g: 0.25, b: 0.25 }, // Gray
-      { r: 1.0, g: 1.0, b: 1.0 }   // White
-  ];
+//   // Define base colors
+//   const baseColors = [
+//       { r: 1.0, g: 0.0, b: 0.0 },  // Red
+//       { r: 1.0, g: 0.5, b: 0.0 },  // Orange
+//       { r: 1.0, g: 1.0, b: 0.0 },  // Yellow
+//       { r: 0.5, g: 1.0, b: 0.0 },  // Lime
+//       { r: 0.0, g: 1.0, b: 0.0 },  // Green
+//       { r: 0.0, g: 1.0, b: 0.5 },  // Turquoise
+//       { r: 0.0, g: 1.0, b: 1.0 },  // Cyan
+//       { r: 0.0, g: 0.5, b: 1.0 },  // Azure
+//       { r: 0.0, g: 0.0, b: 1.0 },  // Blue
+//       { r: 0.5, g: 0.0, b: 1.0 },  // Indigo
+//       { r: 1.0, g: 0.0, b: 1.0 },  // Violet
+//       { r: 1.0, g: 0.0, b: 0.5 },  // Magenta
+//       { r: 0.5, g: 0.0, b: 0.0 },  // Maroon
+//       { r: 0.5, g: 0.25, b: 0.0 }, // Brown
+//       { r: 0.25, g: 0.25, b: 0.25 }, // Gray
+//       { r: 1.0, g: 1.0, b: 1.0 }   // White
+//   ];
 
-  // Generate intermediate colors with different shades
-  for (let i = 0; i < numColors; i++) {
-      const baseColor = baseColors[i];
-      for (let j = 0; j < numShades; j++) {
-          const luminosity = j / (numShades - 1)*1.5; // Adjust luminosity from 0 to 1
-          const r = baseColor.r * luminosity;
-          const g = baseColor.g * luminosity;
-          const b = baseColor.b * luminosity;
-          colors.push({ r, g, b });
-      }
-  }
+//   // Generate intermediate colors with different shades
+//   for (let i = 0; i < numColors; i++) {
+//       const baseColor = baseColors[i];
+//       for (let j = 0; j < numShades; j++) {
+//           const luminosity = j / (numShades - 1)*1.5; // Adjust luminosity from 0 to 1
+//           const r = baseColor.r * luminosity;
+//           const g = baseColor.g * luminosity;
+//           const b = baseColor.b * luminosity;
+//           colors.push({ r, g, b });
+//       }
+//   }
 
-  return colors;
-}
+//   return colors;
+// }
 
 
 
@@ -164,65 +164,83 @@ function generateColors_Good() {
 
 // Generate colors
 // const colors = generateColors_Good();
-const colors = generateColors_Good();
+// const colors = generateColors_Good();
 
 
 // Set uniform values in WebGL
-function setUniformColors(gl, program) {
-  const colorsLocation = gl.getUniformLocation(program, "colors");
-  const colorsArray = colors.flatMap(color => [color.r, color.g, color.b]);
-  gl.uniform3fv(colorsLocation, colorsArray);
-}
+// function setUniformColors(gl, program) {
+//   const colorsLocation = gl.getUniformLocation(program, "colors");
+//   const colorsArray = colors.flatMap(color => [color.r, color.g, color.b]);
+//   gl.uniform3fv(colorsLocation, colorsArray);
+// }
 
-setUniformColors(gl, shaderProgram);
+// setUniformColors(gl, shaderProgram);
 
 
 
 
 // set volumetric data
-let size = 15;
+let r = 255;
+let g = 0;
+let b = 0;
+let a = 255;
+let size = 16;
 let volume = [];
-for (let i = 0; i < 16 * 16 * 16; i++) {
-  // volume.push(Math.floor(Math.random() * 255)); // Generate a random number between 0 and 256
-  volume.push(Math.floor(i % 255));
-  // volume.push(-1);
+for (let i = 0; i < size*size*size; i++) {
+  // volume.push(-1.0);
+  // volume.push(-1.0);
+  // volume.push(-1.0);
+  // volume.push(-1.0);
+
+
+
+  volume.push(r);
+  volume.push(g);
+  volume.push(b);
+  volume.push(a);
 }
 
-// volume[8+8*16] = 100;
-
-let rotatedVolume = [];
-for (let z = 0; z < 16; z++) {
-    for (let y = 0; y < 16; y++) {
-        for (let x = 0; x < 16; x++) {
-            let rotatedX = z;
-            let rotatedY = 16 - x - 1;
-            let rotatedZ = y;
-            let index = x + y * 16 + z * 16 * 16;
-            let rotatedIndex = rotatedX + rotatedY * 16 + rotatedZ * 16 * 16;
-            rotatedVolume[rotatedIndex] = volume[index];
-        }
-    }
-}
+// volume[0] = r;
+// volume[1] = g;
+// volume[2] = b;
+// volume[3] = a;
 
 
 
+// Create a 3D texture object
+const volumeTexture = gl.createTexture();
+gl.bindTexture(gl.TEXTURE_3D, volumeTexture);
 
+// Upload volume data to the 3D texture
+const level = 0;
+const internalFormat = gl.RGBA8; // Use RGBA8 for 8-bit RGBA color components
+const width = size;
+const height = size;
+const depth = size;
+const border = 0;
+const format = gl.RGBA;
+const type = gl.UNSIGNED_BYTE; // Assuming your data is in unsigned byte format
+const data = new Uint8Array(volume); // Assuming volume is a Uint8Array
+gl.texImage3D(gl.TEXTURE_3D, level, internalFormat, width, height, depth, border, format, type, data);
 
-// adds a cube to the volume
-// volume[14*7+14*7+14*7] = 100; // mid
-// volume[14*0+14*0+14*0] = 100; //bot
-// volume[14*0+14*1+14*0] = 10; //bot
-// volume[14*0+14*0+14*1] = 10; //bot
-// volume[14*0+14*1+14*1] = 10; //bot
+// Set texture parameters
+gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-// volume[14*1+14*0+14*0] = 10; //top
-// volume[14*1+14*1+14*0] = 10; //top
-// volume[14*1+14*0+14*1] = 10; //top
-// volume[14*1+14*1+14*1] = 10; //top
+// Bind the texture to a texture unit
+const textureUnit = 0; // Choose a texture unit (e.g., 0)
+gl.activeTexture(gl.TEXTURE0 + textureUnit);
+gl.bindTexture(gl.TEXTURE_3D, volumeTexture);
 
-
+// Use the texture unit in your shader
 const volumeLocation = gl.getUniformLocation(shaderProgram, "volume");
-gl.uniform1iv(volumeLocation, rotatedVolume);
+gl.uniform1i(volumeLocation, textureUnit); // Pass the texture unit index to the shader
+
+
+
 
 console.log(volume);
 
@@ -235,7 +253,7 @@ document.addEventListener('keydown', (event) => CamHandleKeyDown(event, camera),
 document.addEventListener('keyup', CamHandleKeyUp, false);
 var camera = {
   position : {
-    x: -5,
+    x: -10,
     y: 0,
     z: 8.5,
   },
@@ -303,7 +321,7 @@ document.addEventListener('keydown', (event) => {if(event.key == "*"){render();c
 
 // display mode switch
 let displayMode = 0;
-document.addEventListener('keydown', (event) => {if(event.key == "$"){ displayMode = (displayMode+1)%3; UpdateGL1int('displayMode', displayMode ); console.log(displayMode);render();}}, false);
+document.addEventListener('keydown', (event) => {if(event.key == "$"){ displayMode = (displayMode+1)%4; UpdateGL1int('displayMode', displayMode ); console.log(displayMode);render();}}, false);
 
 
 

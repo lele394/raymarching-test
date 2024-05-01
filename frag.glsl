@@ -1,21 +1,29 @@
-
+#version 300 es
+precision lowp sampler3D; // sampler precision
 precision mediump float;
+
+
+
+// Input from vertex shader
+in vec3 FragColor;
+
+// Output to framebuffer
+out vec4 FragColorOutput;
+
+
+
 
 #define INFINITY +(1.0/0.0);
 #define PI 3.1415926535897932384626433832795
 
-#define COLOR_SIZE 256
-uniform vec3 colors[COLOR_SIZE];
-
 uniform int displayMode;
 
-#define MAX_STEP 20
+#define MAX_STEP 200
 
+#define EMPTY_SPACE vec4(-1.0, -1.0, -1.0, -1.0)
+#define BACKGROUND_COLOR vec4(0.0, 0.0, 0.0, 1.0)
 
-#define VOXEL_X 16 // Voxel space will be cubes of 14
-#define VOXEL_Y 16 // Voxel space will be cubes of 14
-#define VOXEL_Z 16 // Voxel space will be cubes of 14
-uniform int volume[VOXEL_X*VOXEL_Y*VOXEL_Z];
+uniform sampler3D volume;
 
 uniform vec2 uResolution;
 uniform float col;
@@ -26,28 +34,7 @@ uniform vec3 camPosition;
 uniform vec3 camRotation;
 
 
-// OK SO THAT GETS THE COLOR WITHOUT UGLY IF ELSES
-// VERY BAD OPTIMIZATION
-vec3 getColorFromBinary(int binaryIndex) {
-    const int numColors = COLOR_SIZE; // Number of colors
-    const vec3 defaultColor = vec3(0.0, 1.0, 0.0); // Default color if index is out of bounds
-
-    if (binaryIndex == -1) {
-        return defaultColor;
-    }
-
-
-    // Loop through the colors array to find the matching index
-    for (int i = 0; i < numColors; i++) {
-        if (i == binaryIndex) {
-            return colors[i];
-        }
-    }
-
-    // Return default color if index is out of bounds
-    return defaultColor;
-}
-
+vec4 debug = BACKGROUND_COLOR;
 
 
 
@@ -121,7 +108,19 @@ vec3 GetRayDirection(void)
 
     
 
+    // same issue here, I'm pretty sure something is up with the collision
+    // // what if i just sweep
+    // float phi_sweep = 3.14;
+    // float theta_sweep = 3.14;
 
+    // float phi = phi_sweep/uResolution.x * gl_FragCoord.x;
+    // float theta = theta_sweep/uResolution.y * gl_FragCoord.y;
+
+    // pixelDirection = vec3(
+    //     sin(phi)*cos(theta),
+    //     sin(phi)*sin(theta),
+    //     cos(phi)
+    // );
 
 
 
@@ -139,38 +138,24 @@ vec3 GetRayDirection(void)
 
 
 
-int getVolumeIndex(int x, int y, int z) {
-    // return outside of the array is we are out of the voxel box.
-    if (x < 0 || x >= VOXEL_X || y < 0 || y >= VOXEL_Y || z < 0 || z >= VOXEL_Z) {
-        // Return a value indicating out of bounds
-        return -1;
-    }
-    return x + y * VOXEL_X + z * VOXEL_X * VOXEL_Y;
-}
 
+vec4 getVoxel(vec3 position) {
+    float volumeScale = 100.0;
+    vec3 pos = position/volumeScale;
 
-
-// OK SO THAT GETS THE COLOR WITHOUT UGLY IF ELSES
-// VERY BAD OPTIMIZATION
-int getVoxel(const int voxelIndex) {
-    const int numVoxels = VOXEL_X*VOXEL_Y*VOXEL_Z; // Number of colors
-    const int defaultVoxel = -1; // return -1 if there's no voxel here
-
+    vec4 status = texture(volume, pos);
     // if value is found to be out of bound already
-    if (voxelIndex == -1 || voxelIndex>numVoxels){
-        return defaultVoxel;
+    if (pos.x < 0.0 || pos.x > 1.0 ||
+        pos.y < 0.0 || pos.y > 1.0 ||
+        pos.z < 0.0 || pos.z > 1.0) {
+        return EMPTY_SPACE;
     }
 
-
-    // Loop through the colors array to find the matching index
-    for (int i = 0; i < numVoxels; i++) {
-        if (i == voxelIndex) {
-            return volume[i];
-        }
+    if(status.x < 0.0){
+        return EMPTY_SPACE;
+    } else {
+        return status;
     }
-
-    // Return default color if index is out of bounds
-    // return defaultVoxel;
 }
 
 
@@ -191,7 +176,7 @@ int getVoxel(const int voxelIndex) {
 
 int steps = 0;
 float dist;
-int doTheMarchingThing(void) {
+vec4 doTheMarchingThing(void) {
     // Says it all, do the marching thingy here
     // Might wanna return the distance value to implement some kind of "fog"
     
@@ -221,12 +206,6 @@ int doTheMarchingThing(void) {
         // Did we hit something?
             // if yes, stop loop and set index to color of the cube
 
-        // returns position to a unit cube
-        // vec3 posInUnitCube = vec3(
-        //     mod_f(currentPosition.x, 1.0),
-        //     mod_f(currentPosition.y, 1.0),
-        //     mod_f(currentPosition.z, 1.0)
-        // );
 
 
         vec3 posInUnitCube = vec3(
@@ -242,93 +221,91 @@ int doTheMarchingThing(void) {
         // check where exit coordinates are
         // on x
         float crossX;
-        if (rayDirection.x > 0.0) { // if positive, check intersection on 0 
+        if (rayDirection.x > 0.0) { // check intersection on 0 
             crossX = 1.0 - posInUnitCube.x;
         } else {
             crossX = -1.0 + posInUnitCube.x;
         }
 
         float crossY;
-        if (rayDirection.y > 0.0) { // if positive, check intersection on 0 
+        if (rayDirection.y > 0.0) { // check intersection on 0 
             crossY = 1.0 - posInUnitCube.y;
         } else {
             crossY = -1.0 + posInUnitCube.y;
         }
 
         float crossZ;
-        if (rayDirection.z > 0.0) { // if positive, check intersection on 0 
+        if (rayDirection.z > 0.0) { // check intersection on 0 
             crossZ = 1.0 - posInUnitCube.z;
         } else {
             crossZ = -1.0 + posInUnitCube.z;
         }
 
 
-        // float rappX = crossX/rayDirection.x;
-        // float rappY = crossY/rayDirection.y;
-        // float rappZ = crossZ/rayDirection.z;
-
-        float rappX = rayDirection.x != 0.0 ? crossX / rayDirection.x : 1e6;
-        float rappY = rayDirection.y != 0.0 ? crossY / rayDirection.y : 1e6;
-        float rappZ = rayDirection.z != 0.0 ? crossZ / rayDirection.z : 1e6;
+        float rappX = rayDirection.x != 0.0 ? crossX / rayDirection.x : 1.0;
+        float rappY = rayDirection.y != 0.0 ? crossY / rayDirection.y : 1.0;
+        float rappZ = rayDirection.z != 0.0 ? crossZ / rayDirection.z : 1.0;
 
 
 
         vec3 increment = rayDirection * min(rappX, min(rappY, rappZ)); // + vec3(1e-6);
+        if(length(increment) <0.000000000001)
+        {
+            debug = vec4(0.0, 1.0, 0.0, 1.0);
+        }
+
 
 
         vec3 checkDirection;
         if(rappX<rappY && rappX<rappZ){ checkDirection = vec3(0.5, 0, 0); } // 100
         if(rappY<rappX && rappY<rappZ){ checkDirection = vec3(0, 0.5, 0); } // 010
         if(rappZ<rappX && rappZ<rappY){ checkDirection = vec3(0, 0, 0.5); } // 001
-
-
         /*
-
-        issue when :  going -z, -y, -x
-
+        
         */
+
+
 
 
         // ============================= wrong until here ===============================
 
+        // vec3 checkPointPosition = currentPosition + checkDirection;
 
 
 
-
-        //overrides everything to use tiny steps
-        // increment = rayDirection*0.1;
-        // checkDirection = vec3(0, 0.5, 0);
-        // vec3 checkDirection = vec3(0, 0.5, 0);
-        // currentPosition += ray;
-
-        vec3 checkPointPosition = currentPosition + 0.1*checkDirection;
+        // increment = 0.1 * rayDirection;
         currentPosition += increment;
 
-
-
-        // checkDirection = 0.000000000001*rayDirection;
-
         // collision check
-        // vec3 checkPointPosition = currentPosition+checkDirection;
-        int voxel = getVoxel(getVolumeIndex(
-            int(floor(checkPointPosition.x)),
-            int(floor(checkPointPosition.y)),
-            int(floor(checkPointPosition.z))
-        ));
+        vec3 checkPointPosition = currentPosition-(increment/2.0);
+        vec4 voxel = getVoxel(checkPointPosition);
 
-        // if -1 then nothing in that cube
-        // voxel = getVoxel(getVolumeIndex(10,10,10));
-        if(voxel >= 0) {
-            dist = length(currentPosition-camPosition);
+
+        // Take into account floating point noise
+        if (abs(voxel.x - EMPTY_SPACE.x) > 0.1 ||
+            abs(voxel.y - EMPTY_SPACE.y) > 0.1 ||
+            abs(voxel.z - EMPTY_SPACE.z) > 0.1 ||
+            abs(voxel.w - EMPTY_SPACE.w) > 0.1) {
+            // If any component of voxel is not equal to EMPTY_SPACE, proceed
+            dist = length(currentPosition - camPosition);
             return voxel;
         }
     }
 
     // return 3;
     // return int(currentPosition.y);
-    return return_if_no_hit;
+    return BACKGROUND_COLOR;
 }
 
+
+
+
+float AbsorptionLaw(float dist)
+{
+    // float absorption_rate = 0.17;
+    float absorption_rate = 0.07;
+    return exp(-dist * absorption_rate);
+}
 
 
 
@@ -345,7 +322,13 @@ void main(void) {
 
 
 
-    int color_index = doTheMarchingThing();
+    vec4 finalColor = doTheMarchingThing();
+
+    // Applies fog law based on a exp(-x)
+    finalColor = BACKGROUND_COLOR + finalColor *  AbsorptionLaw(dist);
+    // finalColor.z = 1.0; // restores transparency to 1
+
+
 
 
     // escape for debugging so i can output shit as i wish in my marching DDA
@@ -358,20 +341,22 @@ void main(void) {
 
 
     if (displayMode == 0) {
-        // i'll modify the for loop while keeping the nested thingy cuz glsl mad >:(
-        vec3 finalColor = getColorFromBinary(color_index);
         // Use final color as needed
-        gl_FragColor = vec4(finalColor, 1.0);
+        FragColorOutput = finalColor;
+        // FragColorOutput = vec4(1.0, 0.5, 0.0, 1.0);
     }
     else if (displayMode == 1) {
         // outputs the number of steps, whiter = more
         float step_perc = float(steps) / float(MAX_STEP);
-        gl_FragColor = vec4(step_perc, step_perc, step_perc, 1.0);
+        FragColorOutput = vec4(step_perc, step_perc, step_perc, 1.0);
     }
     else if (displayMode == 2) {
         // outputs the distance, further = whiter
         float dist_val = 1.0 - float(dist) / float(MAX_STEP);
-        gl_FragColor = vec4(dist_val, dist_val, dist_val, 1.0);
+        FragColorOutput = vec4(dist_val, dist_val, dist_val, 1.0);
+    }
+    else if (displayMode == 3) {
+        FragColorOutput =  debug;
     }
 
 
