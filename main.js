@@ -176,7 +176,9 @@ function UpdateGL1int(name, value) {
 
 // setUniformColors(gl, shaderProgram);
 
-
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 
 // set volumetric data
@@ -194,10 +196,10 @@ for (let i = 0; i < size*size*size; i++) {
 
 
 
-  volume.push(r);
-  volume.push(g);
-  volume.push(b);
-  volume.push(a);
+  volume.push(getRandomInt(0,255));
+  volume.push(getRandomInt(0,255));
+  volume.push(getRandomInt(0,255));
+  volume.push(getRandomInt(0,255));
 }
 
 // volume[0] = r;
@@ -253,9 +255,9 @@ document.addEventListener('keydown', (event) => CamHandleKeyDown(event, camera),
 document.addEventListener('keyup', CamHandleKeyUp, false);
 var camera = {
   position : {
-    x: -10,
-    y: 0,
-    z: 8.5,
+    x: 41,
+    y: 38,
+    z: 142,
   },
 
   // position : {
@@ -271,7 +273,7 @@ var camera = {
   },
 
   rotation_polar : {
-    x: 3.14/2+3.14,
+    x: 3.15,
     y: 0
   }
 }

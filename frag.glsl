@@ -48,7 +48,17 @@ int mod_int(int x, int y) {
 }
 
 float mod_f(float x, float y) {
-    return x - y * floor(x / y);
+    float result = x - y * floor(x / y);
+
+    // Adjust result to be in the range [0, y) if y > 0
+    // or (y, 0] if y < 0
+    if (result < 0.0 && y > 0.0) {
+        result += y;
+    } else if (result > 0.0 && y < 0.0) {
+        result += y;
+    }
+
+    return result;
 }
 
 
@@ -220,46 +230,47 @@ vec4 doTheMarchingThing(void) {
 
         // check where exit coordinates are
         // on x
+        float border = 0.5;
         float crossX;
         if (rayDirection.x > 0.0) { // check intersection on 0 
-            crossX = 1.0 - posInUnitCube.x;
+            crossX = border - posInUnitCube.x;
         } else {
-            crossX = -1.0 + posInUnitCube.x;
+            crossX = -border + posInUnitCube.x;
         }
 
         float crossY;
         if (rayDirection.y > 0.0) { // check intersection on 0 
-            crossY = 1.0 - posInUnitCube.y;
+            crossY = border - posInUnitCube.y;
         } else {
-            crossY = -1.0 + posInUnitCube.y;
+            crossY = -border + posInUnitCube.y;
         }
 
         float crossZ;
         if (rayDirection.z > 0.0) { // check intersection on 0 
-            crossZ = 1.0 - posInUnitCube.z;
+            crossZ = border - posInUnitCube.z;
         } else {
-            crossZ = -1.0 + posInUnitCube.z;
+            crossZ = -border + posInUnitCube.z;
         }
 
 
-        float rappX = rayDirection.x != 0.0 ? crossX / rayDirection.x : 1.0;
-        float rappY = rayDirection.y != 0.0 ? crossY / rayDirection.y : 1.0;
-        float rappZ = rayDirection.z != 0.0 ? crossZ / rayDirection.z : 1.0;
+        float rappX = rayDirection.x > 1e-6 ? crossX / rayDirection.x : 0.5;
+        float rappY = rayDirection.y > 1e-6 ? crossY / rayDirection.y : 0.5;
+        float rappZ = rayDirection.z > 1e-6 ? crossZ / rayDirection.z : 0.5;
 
 
 
         vec3 increment = rayDirection * min(rappX, min(rappY, rappZ)); // + vec3(1e-6);
         if(length(increment) <0.000000000001)
         {
-            debug = vec4(0.0, 1.0, 0.0, 1.0);
+            increment = rayDirection*1e-6;
         }
 
 
 
         vec3 checkDirection;
-        if(rappX<rappY && rappX<rappZ){ checkDirection = vec3(0.5, 0, 0); } // 100
-        if(rappY<rappX && rappY<rappZ){ checkDirection = vec3(0, 0.5, 0); } // 010
-        if(rappZ<rappX && rappZ<rappY){ checkDirection = vec3(0, 0, 0.5); } // 001
+        if(rappX<rappY && rappX<rappZ){ checkDirection = vec3(0, 0, 0)*1e-6; } // 100
+        if(rappY<rappX && rappY<rappZ){ checkDirection = vec3(0, 0, 0)*1e-6; } // 010
+        if(rappZ<rappX && rappZ<rappY){ checkDirection = vec3(0, 0, 0)*1e-6; } // 001
         /*
         
         */
@@ -282,10 +293,10 @@ vec4 doTheMarchingThing(void) {
 
 
         // Take into account floating point noise
-        if (abs(voxel.x - EMPTY_SPACE.x) > 0.1 ||
-            abs(voxel.y - EMPTY_SPACE.y) > 0.1 ||
-            abs(voxel.z - EMPTY_SPACE.z) > 0.1 ||
-            abs(voxel.w - EMPTY_SPACE.w) > 0.1) {
+        if (abs(voxel.x - EMPTY_SPACE.x) > 0.0 ||
+            abs(voxel.y - EMPTY_SPACE.y) > 0.0 ||
+            abs(voxel.z - EMPTY_SPACE.z) > 0.0 ||
+            abs(voxel.w - EMPTY_SPACE.w) > 0.0) {
             // If any component of voxel is not equal to EMPTY_SPACE, proceed
             dist = length(currentPosition - camPosition);
             return voxel;
@@ -302,6 +313,7 @@ vec4 doTheMarchingThing(void) {
 
 float AbsorptionLaw(float dist)
 {
+    return 1.0;
     // float absorption_rate = 0.17;
     float absorption_rate = 0.07;
     return exp(-dist * absorption_rate);
